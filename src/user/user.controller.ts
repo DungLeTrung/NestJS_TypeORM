@@ -13,7 +13,7 @@ export class UserController {
   }
 
   @Get(':id')
-    async getUserById(@Param('id') id: number): Promise<User> {
+    async getUserById(@Param('id') id: string): Promise<User> {
         return this.userService.findById(id); 
   }
 
