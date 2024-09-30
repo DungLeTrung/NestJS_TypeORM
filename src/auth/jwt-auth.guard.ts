@@ -2,7 +2,7 @@ import { ExecutionContext, ForbiddenException, Injectable, UnauthorizedException
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { Role } from 'src/config/const';
-import { ROLES_KEY } from 'src/decorator/role.decorator';
+import { ROLES_KEY } from 'src/decorator/customize';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {

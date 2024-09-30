@@ -1,11 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { Order } from './entities/order.entity';
+import { User } from 'src/user/entities/user.entity';
+import { EntityManager } from 'typeorm';
+import { Status } from 'src/config/const';
 
 @Injectable()
 export class OrdersService {
-  create(createOrderDto: CreateOrderDto) {
-    return 'This action adds a new order';
+  constructor(
+    @InjectEntityManager() private readonly entityManager: EntityManager
+  ) {}
+
+  async createOrder(userId: string, orderData: CreateOrderDto): Promise<Order> {
+    return await this.entityManager.transaction(async (manager) => {
+      const user = await manager.findOne(User, { where: { id: userId } });
+      if (!user) {
+        throw new BadRequestException('User not found!!!')
+      }
+      const order = new Order();
+      order.user = user;
+      order.total_price = orderData.total_price;
+      if (!(orderData.status in Status)) {
+        throw new BadRequestException('Invalid status value!!!')
+      }
+      order.status = Status[orderData.status as keyof typeof Status];
+      return await manager.save(order);
+    });
   }
 
   findAll() {

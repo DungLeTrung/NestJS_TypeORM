@@ -8,6 +8,7 @@ import { OrdersModule } from './orders/orders.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { DataSource } from 'typeorm';
       }),
       inject: [ConfigService], 
     }),
-    UserModule, ProductsModule, OrdersModule, AuthModule,
+    UserModule, ProductsModule, OrdersModule, AuthModule, CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
