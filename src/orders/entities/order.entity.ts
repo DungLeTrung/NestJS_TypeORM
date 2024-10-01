@@ -36,7 +36,7 @@ export class Order {
   @Column({ type: 'decimal', default: 0 })
   totalPrice: number;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar'})
   address: string;
 
   @ManyToOne(() => User, (user) => user.orders)

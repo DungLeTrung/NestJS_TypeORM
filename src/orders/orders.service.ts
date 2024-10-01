@@ -23,6 +23,7 @@ export class OrdersService {
   async create(userId: string, orderData: CreateOrderDto): Promise<Order> {
     try {
       const { products, address } = orderData;
+      console.log(orderData)
 
       if (!address) {
         throw new BadRequestException('Address is required');
@@ -50,6 +51,7 @@ export class OrdersService {
       const order = this.orderRepository.create({
         user: { id: userId },
         totalPrice,
+        address,
         status: Status.PENDING,
         productQuantities: products.map((product) => ({
           productId: product.id,

@@ -8,10 +8,6 @@ export class UpdateOrderDto extends PartialType(CreateOrderDto) {
   @IsOptional()
   address?: string;
 
-  @IsNumber()
-  @IsOptional()
-  total_price?: number;
-
   @IsEnum(Status)
   @IsOptional()
   status?: Status;
