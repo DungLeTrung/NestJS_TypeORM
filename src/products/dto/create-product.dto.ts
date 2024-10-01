@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsNotEmpty, IsNumber, IsPositive, IsString, IsUUID } from 'class-validator';
+import { Category } from 'src/categories/entities/category.entity';
 
 export class CreateProductDto {
   @IsString()
@@ -15,4 +16,8 @@ export class CreateProductDto {
   @IsNumber()
   @IsPositive()
   stock: number;
+
+  @IsArray()
+  @IsString({ each: true }) 
+  categories: string[];
 }

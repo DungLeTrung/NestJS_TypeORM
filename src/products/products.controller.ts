@@ -4,6 +4,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ResponseMessage } from 'src/decorator/customize';
 import { Product } from './entities/product.entity';
+import { PaginateDto } from 'src/common/paginate.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -11,39 +12,35 @@ export class ProductsController {
 
   @Post()
   @ResponseMessage("CREATE PRODUCT")
-  create(@Body() createProductDto: CreateProductDto): Promise<Product> {
-    return this.productsService.create(createProductDto);
+  async create(@Body() createProductDto: CreateProductDto): Promise<Product> {
+    return await this.productsService.create(createProductDto);
   }
 
   @Get()
   @ResponseMessage('LIST PRODUCTS')
-  findAll(
-    @Query('page') currentPage: string,
-    @Query('limit') limit: string,
-    @Query() qs: string,
-  ) {
-    return this.productsService.findAll(+currentPage, +limit, qs);
+  async getAlls(@Query() paginateDto: PaginateDto): Promise<any> {
+    return await this.productsService  .findAll(paginateDto);
   }
 
   @Get(':id')
   @ResponseMessage('GET PRODUCT BY ID')
-  findOne(@Param('id') id: string): Promise<Product> {
-    return this.productsService.findById(id); 
+  async findOne(@Param('id') id: string): Promise<Product> {
+    return await this.productsService.findById(id); 
   }
 
   @Put(':id')
   @ResponseMessage('UPDATE PRODUCT')
-  updateUser(
+  async updateUser(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto): Promise<Product> {
-    return this.productsService.update(id, updateProductDto);
+    return await this.productsService.update(id, updateProductDto);
   }
 
   @Delete(':id')
   @ResponseMessage('DELETE PRODUCT')
-  delete(
+  async delete(
     @Param('id') id: string
   ) : Promise<string> {
-    return this.productsService.delete(id);
+    return await this.productsService.delete(id);
   }
 }

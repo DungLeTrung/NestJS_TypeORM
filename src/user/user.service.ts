@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import aqp from 'api-query-params';
 import * as bcrypt from 'bcrypt';
-import { Not, Repository } from 'typeorm';
-import { User } from './entities/user.entity';
-import { Role, transformSort } from 'src/config/const';
+import { PaginateDto } from 'src/common/paginate.dto';
+import { Role } from 'src/config/const';
+import { Like, Not, Repository } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './entities/user.entity';
 @Injectable()
 export class UserService {
   constructor(
@@ -50,12 +50,12 @@ export class UserService {
       if (!user) {
         throw new NotFoundException('User not found');
       }
-  
+
       Object.assign(user, updateUserDto);
-      
+
       return this.userRepository.save(user);
     } catch (error) {
-      throw new BadRequestException('Update unsuccessful', error.message)
+      throw new BadRequestException('Update unsuccessful', error.message);
     }
   }
 
@@ -65,58 +65,83 @@ export class UserService {
       if (!user) {
         throw new NotFoundException('User not found');
       }
-  
+
+      if(user.role === Role.ADMIN) {
+        throw new BadRequestException('Can not delete admin account')
+      }
+
       await this.userRepository.remove(user);
-      
-      return "Delete successfully";
+
+      return 'Delete successfully';
     } catch (error) {
-      throw new BadRequestException('Delete unsuccessful', error.message)
+      throw new BadRequestException('Delete unsuccessful', error.message);
     }
   }
 
-  async findAll(currentPage?: number, limit?: number, qs?: string) {
+  async findAll(paginateDto: PaginateDto) {
     try {
-      const { filter, sort } = aqp(qs);
-      delete filter.page;
-      delete filter.size;
-      
-      filter.role = Not(Role.ADMIN);
+      const {
+        currentPage,
+        limit,
+        sortBy = 'id',
+        sortOrder = 'ASC',
+        filters = {},
+      } = paginateDto;
 
-      const isPaginationEnabled = currentPage && limit;
+      const filterConditions = {
+        role: Not(Role.ADMIN),
+      };
+
+      if (filters && typeof filters === 'object') {
+        for (const [key, value] of Object.entries(filters)) {
+          if (typeof value === 'string') {
+            filterConditions[key] = Like(`%${value}%`);
+          } else {
+            filterConditions[key] = value;
+          }
+        }
+      }
+
+      const isPaginationEnabled = !!currentPage && !!limit;
       let offset = 0;
       let defaultLimit = 0;
-  
+
       if (isPaginationEnabled) {
         offset = (currentPage - 1) * limit;
         defaultLimit = limit;
+
+        if (isNaN(offset) || isNaN(defaultLimit)) {
+          throw new BadRequestException(
+            "Provided 'skip' or 'limit' value is not a number.",
+          );
+        }
       }
-  
-      if (isNaN(offset) || isNaN(defaultLimit)) {
-        throw new Error("Provided 'skip' or 'limit' value is not a number.");
-      }
-  
-      const totalItems = await this.userRepository.count({ where: filter });
-      const totalPages = isPaginationEnabled ? Math.ceil(totalItems / limit) : 1;
-  
-      const result = await this.userRepository.find({
-        where: filter,
-        skip: isPaginationEnabled ? offset : undefined,
-        take: isPaginationEnabled ? defaultLimit : undefined,
-        order: sort,
+
+      const totalItems = await this.userRepository.count({
+        where: filterConditions,
       });
-  
+      const totalPages = Math.ceil(totalItems / limit);
+
+      const result = await this.userRepository.find({
+        where: filterConditions,
+        skip: offset,
+        take: limit,
+        order: {
+          [sortBy]: sortOrder,
+        },
+      });
+
       return {
         result,
         records: {
-          page: currentPage || 1,
-          size: limit || totalItems,
-          total_pages: totalPages,
-          total_items: totalItems,
+          currentPage,
+          limit,
+          totalPages,
+          totalItems,
         },
       };
     } catch (error) {
-      throw new Error(`Error in findAll: ${error.message}`);
+      throw new BadRequestException(`Error in findAll: ${error.message}`);
     }
   }
-
 }

@@ -11,8 +11,9 @@ import { LoggerMiddleware } from 'src/middleware/logger.middleware';
   ],
   controllers: [UserController],
   providers: [UserService],
-  exports: [UserService], 
+  exports: [UserService, TypeOrmModule], 
 })
+
 export class UserModule implements NestModule {
   configure(user: MiddlewareConsumer) {
     user

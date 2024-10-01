@@ -1,26 +1,38 @@
-import { Status } from "src/config/const";
-import { User } from "src/user/entities/user.entity";
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from "typeorm";
-
-@Entity('orders') 
+import { Product } from 'src/products/entities/product.entity';
+import { User } from 'src/user/entities/user.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+@Entity('orders')
 export class Order {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;  
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-    @ManyToOne(() => User, (user) => user.orders)  
-    @JoinColumn({ name: 'user_id' }) 
-    user: User;  
+  @ManyToMany(() => Product, (product) => product.orders) 
+  @JoinTable({
+    name: 'orders_products', 
+    joinColumn: {
+      name: 'order_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'product_id',
+      referencedColumnName: 'id',
+    },
+  })
+  products: Product[];
 
-    @Column('decimal', { precision: 10, scale: 2 })
-    total_price: number;  
+  @Column('json')
+  productQuantities: { productId: string; quantity: number }[];
 
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-    created_at: Date;  
+  @Column({ type: 'decimal', default: 0 })
+  totalPrice: number;
 
-    @Column({
-        type: 'enum',
-        enum: Status,
-        default: Status.PENDING,
-    })
-    status: Status;  
+  @ManyToOne(() => User, (user) => user.orders) 
+  user: User; 
+
+  @CreateDateColumn({ type: 'timestamptz' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamptz' })
+  updatedAt: Date;
+
 }

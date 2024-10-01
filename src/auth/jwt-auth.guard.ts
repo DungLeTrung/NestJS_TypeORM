@@ -18,20 +18,20 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (err || !user) {
       throw err || new UnauthorizedException('Token is not valid');
     }
-
+    
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
-
+  
     if (requiredRoles) {
-      const userRoles = user?.roles || [];
+      const userRoles = user?.role || [];
       const hasRole = requiredRoles.some((role) => userRoles.includes(role));
       if (!hasRole) {
         throw new ForbiddenException("You don't have the required role");
       }
     }
-
+  
     return user;
-  }
+  }  
 }
