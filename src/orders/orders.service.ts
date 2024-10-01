@@ -1,13 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { PaginateDto } from 'src/common/paginate.dto';
+import { Status } from 'src/config/const';
+import { Product } from 'src/products/entities/product.entity';
+import { User } from 'src/user/entities/user.entity';
+import { In, Like, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
-import { User } from 'src/user/entities/user.entity';
-import { EntityManager, In, Like, Repository } from 'typeorm';
-import { Status } from 'src/config/const';
-import { PaginateDto } from 'src/common/paginate.dto';
-import { Product } from 'src/products/entities/product.entity';
 
 @Injectable()
 export class OrdersService {
@@ -22,31 +22,41 @@ export class OrdersService {
 
   async create(userId: string, orderData: CreateOrderDto): Promise<Order> {
     try {
-      const { products } = orderData;
-  
-      const productIds = products.map(product => product.id);
+      const { products, address } = orderData;
+
+      if (!address) {
+        throw new BadRequestException('Address is required');
+      }
+
+      const productIds = products.map((product) => product.id);
       const productEntities = await this.productRepository.find({
         where: { id: In(productIds) },
       });
-  
+
       if (productEntities.length !== productIds.length) {
         throw new BadRequestException('One or more products are invalid');
       }
-  
+
       const totalPrice = products.reduce((total, orderProduct) => {
-        const product = productEntities.find(prod => prod.id === orderProduct.id);
+        const product = productEntities.find(
+          (prod) => prod.id === orderProduct.id,
+        );
         if (product) {
-          return total + product.price * orderProduct.quantity; 
+          return total + product.price * orderProduct.quantity;
         }
         return total;
       }, 0);
-  
+
       const order = this.orderRepository.create({
-        user: { id: userId }, 
-        products: productEntities,
-        totalPrice, 
+        user: { id: userId },
+        totalPrice,
+        status: Status.PENDING,
+        productQuantities: products.map((product) => ({
+          productId: product.id,
+          quantity: product.quantity,
+        })),
       });
-  
+
       return await this.orderRepository.save(order);
     } catch (error) {
       throw new BadRequestException('Could not create order', error.message);
@@ -60,16 +70,18 @@ export class OrdersService {
         limit,
         sortBy = 'id',
         sortOrder = 'ASC',
-        filters,
+        filters = {},
       } = paginateDto;
 
       const filterConditions = {};
 
-      for (const [key, value] of Object.entries(filters)) {
-        if (typeof value === 'string') {
-          filterConditions[key] = Like(`%${value}%`);
-        } else {
-          filterConditions[key] = value;
+      if (filters && typeof filters === 'object') {
+        for (const [key, value] of Object.entries(filters)) {
+          if (typeof value === 'string') {
+            filterConditions[key] = Like(`%${value}%`);
+          } else {
+            filterConditions[key] = value;
+          }
         }
       }
 
@@ -100,10 +112,16 @@ export class OrdersService {
         order: {
           [sortBy]: sortOrder,
         },
+        relations: ['user'],
       });
 
+      const ordersWithAddress = result.map((order) => ({
+        ...order,
+        address: order.address || 'No address provided',
+      }));
+
       return {
-        result,
+        result: ordersWithAddress,
         records: {
           currentPage,
           limit,
@@ -128,14 +146,19 @@ export class OrdersService {
     }
   }
 
-  async updateOrder(orderId: string, updateOrderDto: UpdateOrderDto): Promise<Order> {
+  async updateOrder(
+    orderId: string,
+    updateOrderDto: UpdateOrderDto,
+  ): Promise<Order> {
     try {
-      const order = await this.orderRepository.findOne({ where: { id: orderId } });
+      const order = await this.orderRepository.findOne({
+        where: { id: orderId },
+      });
       if (!order) {
         throw new NotFoundException('Order not found');
       }
 
-      Object.assign(order, updateOrderDto); 
+      Object.assign(order, updateOrderDto);
 
       return await this.orderRepository.save(order);
     } catch (error) {

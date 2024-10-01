@@ -1,14 +1,24 @@
+import { Status } from 'src/config/const';
 import { Product } from 'src/products/entities/product.entity';
 import { User } from 'src/user/entities/user.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 @Entity('orders')
 export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToMany(() => Product, (product) => product.orders) 
+  @ManyToMany(() => Product, (product) => product.orders)
   @JoinTable({
-    name: 'orders_products', 
+    name: 'orders_products',
     joinColumn: {
       name: 'order_id',
       referencedColumnName: 'id',
@@ -20,19 +30,28 @@ export class Order {
   })
   products: Product[];
 
-  @Column('json')
-  productQuantities: { productId: string; quantity: number }[];
+  @Column('json', { nullable: true })
+  productQuantities: { productId: string; quantity: number }[] | null;
 
   @Column({ type: 'decimal', default: 0 })
   totalPrice: number;
 
-  @ManyToOne(() => User, (user) => user.orders) 
-  user: User; 
+  @Column({ type: 'varchar', nullable: false })
+  address: string;
+
+  @ManyToOne(() => User, (user) => user.orders)
+  user: User;
+
+  @Column({
+    type: 'enum',
+    enum: Status,
+    default: Status.PENDING,
+  })
+  status: Status;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
-
 }

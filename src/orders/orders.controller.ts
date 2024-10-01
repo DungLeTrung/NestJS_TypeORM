@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './entities/order.entity';
@@ -7,18 +7,20 @@ import { ResponseMessage } from 'src/decorator/customize';
 import { PaginateDto } from 'src/common/paginate.dto';
 import { Request } from 'express';
 import { CustomRequest } from 'src/common/custom-request.interface';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @ResponseMessage("CREATE ORDER")
   async createOrder(
     @Req() request: CustomRequest,
     @Body() orderData: CreateOrderDto
   ): Promise<Order> {
-    const userId = request.user.id;
+    const userId = request.user?.id;
     return await this.ordersService.create(userId, orderData);
   }
 

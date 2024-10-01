@@ -26,8 +26,6 @@ import { CategoriesModule } from './categories/categories.module';
         database: configService.get<string>('DATABASE_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: false,
-        migrations: [__dirname + '/migrations/*{.ts,.js}'], 
-        migrationsTableName: 'migrations',
         autoLoadEntities: true, 
       }),
       inject: [ConfigService], 

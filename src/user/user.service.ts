@@ -123,6 +123,11 @@ export class UserService {
       const totalPages = Math.ceil(totalItems / limit);
 
       const result = await this.userRepository.find({
+        select: {
+          id: true,
+          username: true,
+          email: true,
+        },
         where: filterConditions,
         skip: offset,
         take: limit,
