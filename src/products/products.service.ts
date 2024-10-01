@@ -154,7 +154,7 @@ export class ProductsService {
         product.categories = categoryEntities;
       }
       Object.assign(product, updateProductDto);
-
+      //. .update
       return this.productRepository.save(product);
     } catch (error) {
       throw new BadRequestException('Update unsuccessful', error.message);
@@ -167,7 +167,7 @@ export class ProductsService {
       if (!product) {
         throw new NotFoundException('Product not found');
       }
-
+      // xóa mềm
       await this.productRepository.remove(product);
       return 'Product deleted successfully';
     } catch (error) {
