@@ -1,13 +1,23 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { CustomRequest } from 'src/common/custom-request.interface';
+import { PaginateDto } from 'src/common/paginate.dto';
+import { ResponseMessage } from 'src/decorator/customize';
+import { Order } from '../../entities/order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { Order } from './entities/order.entity';
 import { OrdersService } from './orders.service';
-import { ResponseMessage } from 'src/decorator/customize';
-import { PaginateDto } from 'src/common/paginate.dto';
-import { Request } from 'express';
-import { CustomRequest } from 'src/common/custom-request.interface';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('orders')
 export class OrdersController {
@@ -15,10 +25,10 @@ export class OrdersController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  @ResponseMessage("CREATE ORDER")
+  @ResponseMessage('CREATE ORDER')
   async createOrder(
     @Req() request: CustomRequest,
-    @Body() orderData: CreateOrderDto
+    @Body() orderData: CreateOrderDto,
   ): Promise<Order> {
     const userId = request.user?.id;
     return await this.ordersService.create(userId, orderData);
@@ -33,7 +43,7 @@ export class OrdersController {
   @Get(':id')
   @ResponseMessage('GET ORDER BY ID')
   async findOne(@Param('id') id: string): Promise<Order> {
-    return await this.ordersService.findById(id); 
+    return await this.ordersService.findById(id);
   }
 
   @Put(':id')
@@ -47,9 +57,7 @@ export class OrdersController {
 
   @Delete(':id')
   @ResponseMessage('DELETE ORDER')
-  async delete(
-    @Param('id') id: string
-  ) : Promise<string> {
+  async delete(@Param('id') id: string): Promise<string> {
     return await this.ordersService.delete(id);
   }
 }

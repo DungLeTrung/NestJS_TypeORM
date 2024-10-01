@@ -1,10 +1,13 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Category } from './entities/category.entity';
-import { Like, Repository } from 'typeorm';
 import { PaginateDto } from 'src/common/paginate.dto';
+import { Like, Repository } from 'typeorm';
+import { Category } from '../../entities/category.entity';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class CategoriesService {
@@ -16,19 +19,19 @@ export class CategoriesService {
   async create(categoryData: Partial<Category>): Promise<Category> {
     try {
       const existingCategory = await this.categoryRepository.findOne({
-        where: { name: categoryData.name }, 
+        where: { name: categoryData.name },
       });
-  
+
       if (existingCategory) {
         throw new BadRequestException('Category with this name already exists');
       }
       const category = await this.categoryRepository.create({
         ...categoryData,
       });
-  
+
       return await this.categoryRepository.save(category);
     } catch (error) {
-      throw new BadRequestException("Could not create category", error.message);
+      throw new BadRequestException('Could not create category', error.message);
     }
   }
 
@@ -109,18 +112,21 @@ export class CategoriesService {
     }
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto): Promise<Category> {
+  async update(
+    id: string,
+    updateCategoryDto: UpdateCategoryDto,
+  ): Promise<Category> {
     try {
       const category = await this.categoryRepository.findOne({ where: { id } });
       if (!category) {
         throw new NotFoundException('Category not found');
       }
-  
+
       Object.assign(category, updateCategoryDto);
-      
+
       return this.categoryRepository.save(category);
     } catch (error) {
-      throw new BadRequestException('Update unsuccessful', error.message)
+      throw new BadRequestException('Update unsuccessful', error.message);
     }
   }
 
@@ -130,11 +136,11 @@ export class CategoriesService {
       if (!category) {
         throw new NotFoundException('Category not found');
       }
-  
+
       await this.categoryRepository.remove(category);
-      return "Category deleted successfully"
+      return 'Category deleted successfully';
     } catch (error) {
-      throw new BadRequestException('Delete unsuccessful', error.message)
+      throw new BadRequestException('Delete unsuccessful', error.message);
     }
   }
 }

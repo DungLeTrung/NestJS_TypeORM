@@ -1,4 +1,4 @@
-import { IUser } from 'src/user/interfaces/user.interface';
+import { IUser } from 'src/module/user/interfaces/user.interface';
 
 export enum Role {
   ADMIN = 'ADMIN',

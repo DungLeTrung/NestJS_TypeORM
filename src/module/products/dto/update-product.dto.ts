@@ -1,7 +1,12 @@
 import { PartialType } from '@nestjs/mapped-types';
+import {
+  IsArray,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+} from 'class-validator';
 import { CreateProductDto } from './create-product.dto';
-import { ArrayNotEmpty, IsArray, IsNumber, IsOptional, IsPositive, IsString, IsUUID } from 'class-validator';
-import { Category } from 'src/categories/entities/category.entity';
 
 export class UpdateProductDto extends PartialType(CreateProductDto) {
   @IsString()
@@ -20,6 +25,6 @@ export class UpdateProductDto extends PartialType(CreateProductDto) {
   stock: number;
 
   @IsArray()
-  @IsString({ each: true }) 
+  @IsString({ each: true })
   categories: string[];
 }

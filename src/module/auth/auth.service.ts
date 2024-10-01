@@ -18,7 +18,7 @@ export class AuthService {
     try {
       const user = await this.userService.findByEmail(loginDTO.email);
       if (user && (await bcrypt.compare(loginDTO.password, user.password))) {
-        const payload = { username: user.email, role: user.role, sub: user.id };
+        const payload = { email: user.email, role: user.role, sub: user.id };
 
         const accessToken = this.jwtService.sign(payload, {
           secret: process.env.JWT_ACCESS_TOKEN_SECRET,
@@ -33,7 +33,7 @@ export class AuthService {
         return {
           access_token: accessToken,
           refresh_token: refreshToken,
-          user
+          user,
         };
       }
     } catch (error) {

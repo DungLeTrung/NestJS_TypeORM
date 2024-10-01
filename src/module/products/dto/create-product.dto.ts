@@ -1,5 +1,4 @@
 import { ArrayNotEmpty, IsArray, IsNotEmpty, IsNumber, IsPositive, IsString, IsUUID } from 'class-validator';
-import { Category } from 'src/categories/entities/category.entity';
 
 export class CreateProductDto {
   @IsString()

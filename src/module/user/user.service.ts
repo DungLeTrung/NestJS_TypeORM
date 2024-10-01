@@ -1,11 +1,15 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { PaginateDto } from 'src/common/paginate.dto';
 import { Role } from 'src/config/const';
 import { Like, Not, Repository } from 'typeorm';
+import { User } from '../../entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
 @Injectable()
 export class UserService {
   constructor(
@@ -66,8 +70,8 @@ export class UserService {
         throw new NotFoundException('User not found');
       }
 
-      if(user.role === Role.ADMIN) {
-        throw new BadRequestException('Can not delete admin account')
+      if (user.role === Role.ADMIN) {
+        throw new BadRequestException('Can not delete admin account');
       }
 
       await this.userRepository.remove(user);

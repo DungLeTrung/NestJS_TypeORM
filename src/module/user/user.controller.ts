@@ -1,10 +1,19 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Put } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './entities/user.entity';
-import { ResponseMessage } from 'src/decorator/customize';
-import { UpdateUserDto } from './dto/update-user.dto';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { PaginateDto } from 'src/common/paginate.dto';
+import { ResponseMessage } from 'src/decorator/customize';
+import { User } from '../../entities/user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
@@ -20,7 +29,8 @@ export class UserController {
   @ResponseMessage('UPDATE USER')
   async updateUser(
     @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto): Promise<User> {
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<User> {
     return await this.userService.update(id, updateUserDto);
   }
 
@@ -33,14 +43,12 @@ export class UserController {
   @Get(':id')
   @ResponseMessage('GET USER BY ID')
   async getUserById(@Param('id') id: string): Promise<User> {
-    return await this.userService.findById(id); 
+    return await this.userService.findById(id);
   }
 
   @Delete(':id')
   @ResponseMessage('DELETE USER')
-  async delete(
-    @Param('id') id: string
-  ) : Promise<string> {
+  async delete(@Param('id') id: string): Promise<string> {
     return await this.userService.delete(id);
   }
 }

@@ -1,6 +1,6 @@
-import { Category } from 'src/categories/entities/category.entity';
-import { Order } from 'src/orders/entities/order.entity';
 import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Category } from './category.entity';
+import { Order } from './order.entity';
 
 @Entity('products')
 export class Product {
@@ -39,6 +39,6 @@ export class Product {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
-  @ManyToMany(() => Order, (order) => order.products) // Many products can be in many orders
+  @ManyToMany(() => Order, (order) => order.products) 
   orders: Order[];
 }

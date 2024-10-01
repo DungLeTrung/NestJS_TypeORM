@@ -1,13 +1,16 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaginateDto } from 'src/common/paginate.dto';
 import { Status } from 'src/config/const';
-import { Product } from 'src/products/entities/product.entity';
-import { User } from 'src/user/entities/user.entity';
+import { Product, User } from 'src/entities';
 import { In, Like, Repository } from 'typeorm';
+import { Order } from '../../entities/order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { Order } from './entities/order.entity';
 
 @Injectable()
 export class OrdersService {
@@ -23,7 +26,7 @@ export class OrdersService {
   async create(userId: string, orderData: CreateOrderDto): Promise<Order> {
     try {
       const { products, address } = orderData;
-      console.log(orderData)
+      console.log(orderData);
 
       if (!address) {
         throw new BadRequestException('Address is required');
