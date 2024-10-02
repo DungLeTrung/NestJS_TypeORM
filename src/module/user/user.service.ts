@@ -10,6 +10,7 @@ import { Role } from 'src/config/const';
 import { FindOneOptions, Like, Not, Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { classToPlain } from 'class-transformer';
 @Injectable()
 export class UserService {
   constructor(
@@ -27,7 +28,7 @@ export class UserService {
       if (!user) {
         throw new NotFoundException('User not found');
       }
-      return user;
+      return classToPlain(user) as User
     } catch (error) {
       throw new BadRequestException('Can not find user', error.message);
     }
