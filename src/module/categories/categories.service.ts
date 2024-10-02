@@ -45,7 +45,9 @@ export class CategoriesService {
         filters = {},
       } = paginateDto;
 
-      const filterConditions = {};
+      const filterConditions = {
+        deletedAt: null
+      };
 
       if (filters && typeof filters === 'object') {
         for (const [key, value] of Object.entries(filters)) {
@@ -102,7 +104,7 @@ export class CategoriesService {
 
   async findById(id: string): Promise<Category> {
     try {
-      const category = await this.categoryRepository.findOne({ where: { id } });
+      const category = await this.categoryRepository.findOne({ where: { id, deletedAt: null } });
       if (!category) {
         throw new NotFoundException('Category not found');
       }
@@ -117,7 +119,7 @@ export class CategoriesService {
     updateCategoryDto: UpdateCategoryDto,
   ): Promise<Category> {
     try {
-      const category = await this.categoryRepository.findOne({ where: { id } });
+      const category = await this.categoryRepository.findOne({ where: { id,  deletedAt: null } });
       if (!category) {
         throw new NotFoundException('Category not found');
       }
@@ -132,12 +134,12 @@ export class CategoriesService {
 
   async delete(id: string): Promise<string> {
     try {
-      const category = await this.categoryRepository.findOne({ where: { id } });
+      const category = await this.categoryRepository.findOne({ where: { id, deletedAt: null } });
       if (!category) {
         throw new NotFoundException('Category not found');
       }
 
-      await this.categoryRepository.remove(category);
+      await this.categoryRepository.softDelete(category.id);
       return 'Category deleted successfully';
     } catch (error) {
       throw new BadRequestException('Delete unsuccessful', error.message);

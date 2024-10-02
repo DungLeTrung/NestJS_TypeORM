@@ -1,12 +1,13 @@
 import {
-  Column,
-  CreateDateColumn,
   Entity,
-  ManyToMany,
+  Column,
   PrimaryGeneratedColumn,
+  OneToMany,
+  CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
-import { Product } from './product.entity';
+import { ProductCategory } from './product_category.entity';
 
 @Entity('categories')
 export class Category {
@@ -19,12 +20,15 @@ export class Category {
   @Column()
   description: string;
 
-  @ManyToMany(() => Product, (product) => product.categories)
-  products: Product[];
+  @OneToMany(() => ProductCategory, (productCategory) => productCategory.category)
+  productCategories: ProductCategory[];
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }

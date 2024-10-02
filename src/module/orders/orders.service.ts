@@ -26,7 +26,6 @@ export class OrdersService {
   async create(userId: string, orderData: CreateOrderDto): Promise<Order> {
     try {
       const { products, address } = orderData;
-      console.log(orderData);
 
       if (!address) {
         throw new BadRequestException('Address is required');
@@ -82,7 +81,11 @@ export class OrdersService {
 
       if (filters && typeof filters === 'object') {
         for (const [key, value] of Object.entries(filters)) {
-          if (typeof value === 'string') {
+          if(key === 'status') {
+            filterConditions[key] = value
+          } else if (key === 'id') { 
+            filterConditions['user.id'] = value;
+          } else if (typeof value === 'string') {
             filterConditions[key] = Like(`%${value}%`);
           } else {
             filterConditions[key] = value;
@@ -118,6 +121,13 @@ export class OrdersService {
           [sortBy]: sortOrder,
         },
         relations: ['user'],
+        select: {
+          user: {
+            id: true, 
+            username: true, 
+            email: true, 
+          },
+        },
       });
 
       const ordersWithAddress = result.map((order) => ({

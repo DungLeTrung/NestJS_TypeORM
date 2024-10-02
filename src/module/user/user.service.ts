@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { PaginateDto } from 'src/common/paginate.dto';
 import { Role } from 'src/config/const';
-import { Like, Not, Repository } from 'typeorm';
+import { FindOneOptions, Like, Not, Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 @Injectable()
@@ -16,6 +16,10 @@ export class UserService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
+
+  async findOne(options: FindOneOptions<User>): Promise<User> {
+    return await this.userRepository.findOne(options);
+  }
 
   async findById(id: string): Promise<User> {
     try {
@@ -27,14 +31,6 @@ export class UserService {
     } catch (error) {
       throw new BadRequestException('Can not find user', error.message);
     }
-  }
-
-  async findByUsername(username: string): Promise<User | undefined> {
-    return this.userRepository.findOne({ where: { username } });
-  }
-
-  async findByEmail(email: string): Promise<User | undefined> {
-    return this.userRepository.findOne({ where: { email } });
   }
 
   async create(userData: Partial<User>): Promise<User> {
@@ -91,46 +87,50 @@ export class UserService {
         sortOrder = 'ASC',
         filters = {},
       } = paginateDto;
-
-      const filterConditions = {
+  
+      const filterConditions: any = {
         role: Not(Role.ADMIN),
       };
-
+  
       if (filters && typeof filters === 'object') {
         for (const [key, value] of Object.entries(filters)) {
-          if (typeof value === 'string') {
-            filterConditions[key] = Like(`%${value}%`);
+          if (key === 'role' || key === 'isActive') {
+            filterConditions[key] = value; 
+          } else if (typeof value === 'string') {
+            filterConditions[key] = Like(`%${value}%`); 
           } else {
             filterConditions[key] = value;
           }
         }
       }
-
+  
       const isPaginationEnabled = !!currentPage && !!limit;
       let offset = 0;
       let defaultLimit = 0;
-
+  
       if (isPaginationEnabled) {
         offset = (currentPage - 1) * limit;
         defaultLimit = limit;
-
+  
         if (isNaN(offset) || isNaN(defaultLimit)) {
           throw new BadRequestException(
             "Provided 'skip' or 'limit' value is not a number.",
           );
         }
       }
-
+  
       const totalItems = await this.userRepository.count({
         where: filterConditions,
       });
       const totalPages = Math.ceil(totalItems / limit);
-
+  
       const result = await this.userRepository.find({
         select: {
           id: true,
           username: true,
           email: true,
+          role: true,
+          isActive: true,
         },
         where: filterConditions,
         skip: offset,
@@ -139,7 +139,7 @@ export class UserService {
           [sortBy]: sortOrder,
         },
       });
-
+  
       return {
         result,
         records: {
@@ -153,4 +153,5 @@ export class UserService {
       throw new BadRequestException(`Error in findAll: ${error.message}`);
     }
   }
+  
 }

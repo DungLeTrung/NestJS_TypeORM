@@ -9,6 +9,7 @@ import { CategoriesModule } from './module/categories/categories.module';
 import { OrdersModule } from './module/orders/orders.module';
 import { ProductsModule } from './module/products/products.module';
 import { UserModule } from './module/user/user.module';
+import { ProductCategoryModule } from './product_category/product_category.module';
 
 @Module({
   imports: [
@@ -25,12 +26,12 @@ import { UserModule } from './module/user/user.module';
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: false,
+        synchronize: true,
         autoLoadEntities: true, 
       }),
       inject: [ConfigService], 
     }),
-    UserModule, ProductsModule, OrdersModule, AuthModule, CategoriesModule,
+    UserModule, ProductsModule, OrdersModule, AuthModule, CategoriesModule, ProductCategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

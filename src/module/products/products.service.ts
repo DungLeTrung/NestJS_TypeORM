@@ -5,11 +5,12 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaginateDto } from 'src/common/paginate.dto';
+import { Category } from 'src/entities';
+import { ProductCategory } from 'src/entities/product_category.entity';
 import { In, Like, Repository } from 'typeorm';
 import { Product } from '../../entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { Category } from 'src/entities';
 
 @Injectable()
 export class ProductsService {
@@ -18,21 +19,23 @@ export class ProductsService {
     private productRepository: Repository<Product>,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
+    @InjectRepository(ProductCategory)
+    private productCategoryRepository: Repository<ProductCategory>,
   ) {}
 
   async create(productData: CreateProductDto): Promise<Product> {
     try {
-      const { categories, ...rest } = productData;
+      const { productCategories, ...rest } = productData;
 
-      if (!categories || categories.length === 0) {
+      if (!productCategories || productCategories.length === 0) {
         throw new BadRequestException('At least one category is required');
       }
 
       const categoryEntities = await this.categoryRepository.find({
-        where: { id: In(categories) },
+        where: { id: In(productCategories) },
       });
 
-      if (categoryEntities.length !== categories.length) {
+      if (categoryEntities.length !== productCategories.length) {
         throw new BadRequestException('One or more categories are invalid');
       }
 
@@ -44,12 +47,18 @@ export class ProductsService {
         throw new BadRequestException('Product with this name already exists');
       }
 
-      const product = this.productRepository.create({
-        ...rest,
-        categories: categoryEntities,
-      });
+      const product = this.productRepository.create(rest);
+      const savedProduct = await this.productRepository.save(product);
 
-      return await this.productRepository.save(product);
+      for (const category of categoryEntities) {
+        const productCategory = this.productCategoryRepository.create({
+          product: savedProduct,
+          category,
+        });
+        await this.productCategoryRepository.save(productCategory);
+      }
+
+      return savedProduct;
     } catch (error) {
       throw new BadRequestException('Could not create product', error.message);
     }
@@ -65,7 +74,9 @@ export class ProductsService {
         filters = {},
       } = paginateDto;
 
-      const filterConditions = {};
+      const filterConditions = {
+        deletedAt: null,
+      };
 
       if (filters && typeof filters === 'object') {
         for (const [key, value] of Object.entries(filters)) {
@@ -104,6 +115,7 @@ export class ProductsService {
         order: {
           [sortBy]: sortOrder,
         },
+        relations: ['productCategories'],
       });
 
       return {
@@ -122,7 +134,9 @@ export class ProductsService {
 
   async findById(id: string): Promise<Product> {
     try {
-      const product = await this.productRepository.findOne({ where: { id } });
+      const product = await this.productRepository.findOne({
+        where: { id, deletedAt: null },
+      });
       if (!product) {
         throw new NotFoundException('Product not found');
       }
@@ -138,41 +152,52 @@ export class ProductsService {
   ): Promise<Product> {
     try {
       const product = await this.productRepository.findOne({
-        where: { id },
-        relations: ['categories'],
+        where: { id, deletedAt: null },
+        relations: ['productCategories', 'productCategories.category'],
       });
+  
       if (!product) {
         throw new NotFoundException('Product not found');
       }
-
-      if (updateProductDto.categories) {
-        const categoryEntities = await this.categoryRepository.find({
-          where: { id: In(updateProductDto.categories) },
+  
+      if (updateProductDto.productCategories) {
+        const newCategories = await this.categoryRepository.find({
+          where: { id: In(updateProductDto.productCategories) },
         });
-        if (
-          !categoryEntities ||
-          categoryEntities.length !== updateProductDto.categories.length
-        ) {
+  
+        if (newCategories.length !== updateProductDto.productCategories.length) {
           throw new BadRequestException('One or more categories are invalid');
         }
-        product.categories = categoryEntities;
+    
+        const newProductCategories = newCategories.map(category => 
+          this.productCategoryRepository.create({ 
+            product: product,
+            category 
+          })
+        );
+        
+        await this.productCategoryRepository.save(newProductCategories);
       }
+  
       Object.assign(product, updateProductDto);
 
-      return this.productRepository.save(product);
+      product.updatedAt = new Date();
+
+      return await this.productRepository.save(product);
     } catch (error) {
       throw new BadRequestException('Update unsuccessful', error.message);
     }
   }
+  
 
   async delete(id: string): Promise<string> {
     try {
-      const product = await this.productRepository.findOne({ where: { id } });
+      const product = await this.productRepository.findOne({ where: { id, deletedAt: null } });
       if (!product) {
         throw new NotFoundException('Product not found');
       }
 
-      await this.productRepository.remove(product);
+      await this.productRepository.softDelete(product.id);
       return 'Product deleted successfully';
     } catch (error) {
       throw new BadRequestException('Delete unsuccessful', error.message);

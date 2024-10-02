@@ -18,5 +18,5 @@ export class CreateProductDto {
 
   @IsArray()
   @IsString({ each: true }) 
-  categories: string[];
+  productCategories: string[];
 }

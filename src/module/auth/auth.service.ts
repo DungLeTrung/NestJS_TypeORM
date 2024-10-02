@@ -16,7 +16,9 @@ export class AuthService {
 
   async login(loginDTO: LoginDTO): Promise<AuthResponse> {
     try {
-      const user = await this.userService.findByEmail(loginDTO.email);
+      const user = await this.userService.findOne(
+        {where: {email: loginDTO.email}}
+      );
       if (user && (await bcrypt.compare(loginDTO.password, user.password))) {
         const payload = { email: user.email, role: user.role, sub: user.id };
 
@@ -46,8 +48,8 @@ export class AuthService {
 
   async register(registerDTO: RegisterDTO): Promise<RegisterResponse> {
     try {
-      const existingUser = await this.userService.findByEmail(
-        registerDTO.email,
+      const existingUser = await this.userService.findOne(
+        {where: {email: registerDTO.email}}
       );
       if (existingUser) {
         throw new BadRequestException('User already exists with this email.');
@@ -76,7 +78,9 @@ export class AuthService {
         secret: process.env.JWT_REFRESH_TOKEN_SECRET,
       });
 
-      const user = await this.userService.findById(payload.sub);
+      const user = await this.userService.findOne(
+        {where: {id: payload.sub}}
+      );
       if (!user) {
         throw new BadRequestException('Invalid refresh token');
       }

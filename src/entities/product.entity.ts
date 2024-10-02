@@ -1,6 +1,15 @@
-import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { Category } from './category.entity';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Order } from './order.entity';
+import { ProductCategory } from './product_category.entity';
 
 @Entity('products')
 export class Product {
@@ -19,19 +28,11 @@ export class Product {
   @Column('int')
   stock: number;
 
-  @ManyToMany(() => Category, (category) => category.products)
-  @JoinTable({
-    name: 'products_categories', 
-    joinColumn: {
-      name: 'product_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'category_id', 
-      referencedColumnName: 'id',
-    },
-  })
-  categories: Category[];
+  @OneToMany(
+    () => ProductCategory,
+    (productCategory) => productCategory.product,
+  )
+  productCategories: ProductCategory[];
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
@@ -39,6 +40,9 @@ export class Product {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
-  @ManyToMany(() => Order, (order) => order.products) 
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date;
+
+  @ManyToMany(() => Order, (order) => order.products)
   orders: Order[];
 }
