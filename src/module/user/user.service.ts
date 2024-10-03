@@ -10,7 +10,7 @@ import { Role } from 'src/config/const';
 import { FindOneOptions, Like, Not, Repository } from 'typeorm';
 import { User } from '../../entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { classToPlain } from 'class-transformer';
+import { classToPlain, instanceToPlain } from 'class-transformer';
 @Injectable()
 export class UserService {
   constructor(
@@ -28,7 +28,7 @@ export class UserService {
       if (!user) {
         throw new NotFoundException('User not found');
       }
-      return classToPlain(user) as User
+      return instanceToPlain(user) as User;
     } catch (error) {
       throw new BadRequestException('Can not find user', error.message);
     }
@@ -71,7 +71,7 @@ export class UserService {
         throw new BadRequestException('Can not delete admin account');
       }
 
-      await this.userRepository.remove(user);
+      await this.userRepository.softDelete(user.id);
 
       return 'Delete successfully';
     } catch (error) {
@@ -122,6 +122,7 @@ export class UserService {
   
       const totalItems = await this.userRepository.count({
         where: filterConditions,
+        withDeleted: true
       });
       const totalPages = Math.ceil(totalItems / limit);
   
@@ -132,6 +133,9 @@ export class UserService {
           email: true,
           role: true,
           isActive: true,
+          createdAt: true,
+          updatedAt: true, 
+          deletedAt: true
         },
         where: filterConditions,
         skip: offset,
@@ -139,6 +143,7 @@ export class UserService {
         order: {
           [sortBy]: sortOrder,
         },
+        withDeleted: true
       });
   
       return {

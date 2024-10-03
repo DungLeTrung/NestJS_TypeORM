@@ -75,7 +75,6 @@ export class ProductsService {
       } = paginateDto;
 
       const filterConditions = {
-        deletedAt: null,
       };
 
       if (filters && typeof filters === 'object') {
@@ -135,7 +134,7 @@ export class ProductsService {
   async findById(id: string): Promise<Product> {
     try {
       const product = await this.productRepository.findOne({
-        where: { id, deletedAt: null },
+        where: { id },
       });
       if (!product) {
         throw new NotFoundException('Product not found');
@@ -152,7 +151,7 @@ export class ProductsService {
   ): Promise<Product> {
     try {
       const product = await this.productRepository.findOne({
-        where: { id, deletedAt: null },
+        where: { id },
         relations: ['productCategories', 'productCategories.category'],
       });
   
@@ -192,7 +191,7 @@ export class ProductsService {
 
   async delete(id: string): Promise<string> {
     try {
-      const product = await this.productRepository.findOne({ where: { id, deletedAt: null } });
+      const product = await this.productRepository.findOne({ where: { id } });
       if (!product) {
         throw new NotFoundException('Product not found');
       }

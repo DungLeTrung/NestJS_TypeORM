@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Post,
   Put,
@@ -20,12 +21,14 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
+  @HttpCode(201)
   @ResponseMessage('CREATE USER')
   async create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return await this.userService.create(createUserDto);
   }
 
   @Put(':id')
+  @HttpCode(201)
   @ResponseMessage('UPDATE USER')
   async updateUser(
     @Param('id') id: string,
@@ -35,18 +38,21 @@ export class UserController {
   }
 
   @Get()
+  @HttpCode(201)
   @ResponseMessage('LIST USERS')
   async getAlls(@Query() paginateDto: PaginateDto): Promise<any> {
     return await this.userService.findAll(paginateDto);
   }
 
   @Get(':id')
+  @HttpCode(201)
   @ResponseMessage('GET USER BY ID')
   async getUserById(@Param('id') id: string): Promise<User> {
     return await this.userService.findById(id);
   }
 
   @Delete(':id')
+  @HttpCode(201)
   @ResponseMessage('DELETE USER')
   async delete(@Param('id') id: string): Promise<string> {
     return await this.userService.delete(id);

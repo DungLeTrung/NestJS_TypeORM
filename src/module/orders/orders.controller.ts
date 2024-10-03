@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Post,
   Put,
@@ -24,6 +25,7 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
+  @HttpCode(201)
   @UseGuards(JwtAuthGuard)
   @ResponseMessage('CREATE ORDER')
   async createOrder(
@@ -35,18 +37,21 @@ export class OrdersController {
   }
 
   @Get()
+  @HttpCode(201)
   @ResponseMessage('LIST ORDER')
   async getAlls(@Query() paginateDto: PaginateDto): Promise<any> {
     return await this.ordersService.findAll(paginateDto);
   }
 
   @Get(':id')
+  @HttpCode(201)
   @ResponseMessage('GET ORDER BY ID')
   async findOne(@Param('id') id: string): Promise<Order> {
     return await this.ordersService.findById(id);
   }
 
   @Put(':id')
+  @HttpCode(201)
   @ResponseMessage('UPDATE ORDER')
   async updateOrder(
     @Param('id') id: string,
@@ -56,6 +61,7 @@ export class OrdersController {
   }
 
   @Delete(':id')
+  @HttpCode(201)
   @ResponseMessage('DELETE ORDER')
   async delete(@Param('id') id: string): Promise<string> {
     return await this.ordersService.delete(id);

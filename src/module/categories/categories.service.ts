@@ -46,7 +46,6 @@ export class CategoriesService {
       } = paginateDto;
 
       const filterConditions = {
-        deletedAt: null
       };
 
       if (filters && typeof filters === 'object') {
@@ -104,7 +103,7 @@ export class CategoriesService {
 
   async findById(id: string): Promise<Category> {
     try {
-      const category = await this.categoryRepository.findOne({ where: { id, deletedAt: null } });
+      const category = await this.categoryRepository.findOne({ where: { id} });
       if (!category) {
         throw new NotFoundException('Category not found');
       }
@@ -119,7 +118,7 @@ export class CategoriesService {
     updateCategoryDto: UpdateCategoryDto,
   ): Promise<Category> {
     try {
-      const category = await this.categoryRepository.findOne({ where: { id,  deletedAt: null } });
+      const category = await this.categoryRepository.findOne({ where: { id } });
       if (!category) {
         throw new NotFoundException('Category not found');
       }
@@ -134,7 +133,7 @@ export class CategoriesService {
 
   async delete(id: string): Promise<string> {
     try {
-      const category = await this.categoryRepository.findOne({ where: { id, deletedAt: null } });
+      const category = await this.categoryRepository.findOne({ where: { id } });
       if (!category) {
         throw new NotFoundException('Category not found');
       }

@@ -10,12 +10,15 @@ import { OrdersModule } from './module/orders/orders.module';
 import { ProductsModule } from './module/products/products.module';
 import { UserModule } from './module/user/user.module';
 import { ProductCategoryModule } from './product_category/product_category.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { InvoiceModule } from './invoice/invoice.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -31,7 +34,7 @@ import { ProductCategoryModule } from './product_category/product_category.modul
       }),
       inject: [ConfigService], 
     }),
-    UserModule, ProductsModule, OrdersModule, AuthModule, CategoriesModule, ProductCategoryModule,
+    UserModule, ProductsModule, OrdersModule, AuthModule, CategoriesModule, ProductCategoryModule, InvoiceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
