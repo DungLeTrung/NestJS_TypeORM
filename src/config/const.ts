@@ -10,6 +10,11 @@ export enum Status {
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
 }
+
+export enum StatusInvoice {
+  NEW = 'NEW',
+  OVERDUE = 'OVERDUE',
+}
 export interface AuthResponse {
   access_token: string;
   refresh_token: string;
