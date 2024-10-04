@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Order } from './order.entity';
 import { Exclude } from 'class-transformer';
+import { Invoice } from './invoice.entity';
 
 @Entity('users')
 export class User {
@@ -45,6 +46,9 @@ export class User {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 
-  @DeleteDateColumn({ nullable: true })
+  @DeleteDateColumn({ nullable: false })
   deletedAt: Date;
+
+  @OneToMany(() => Invoice, (invoice) => invoice.user)
+  invoices: Invoice[];
 }

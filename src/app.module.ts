@@ -12,11 +12,22 @@ import { UserModule } from './module/user/user.module';
 import { ProductCategoryModule } from './product_category/product_category.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { InvoiceModule } from './invoice/invoice.module';
+import { BullModule } from '@nestjs/bull';
+import { MailService } from './mail/mail.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost', 
+        port: 6379,        
+      },
+    }),
+    BullModule.registerQueue({
+      name: 'mailQueue',
     }),
     ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
@@ -37,7 +48,7 @@ import { InvoiceModule } from './invoice/invoice.module';
     UserModule, ProductsModule, OrdersModule, AuthModule, CategoriesModule, ProductCategoryModule, InvoiceModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, MailService],
 })
 export class AppModule {
   constructor(private dataSource: DataSource){}
