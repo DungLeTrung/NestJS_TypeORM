@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
 @Injectable()
@@ -16,13 +16,16 @@ export class MailService {
   }
 
   async sendEmail(to: string, subject: string, text: string) {
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to,
-      subject,
-      text,
-    };
-
-    await this.transporter.sendMail(mailOptions);
+    try {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to,
+        subject,
+        text,
+      };
+      await this.transporter.sendMail(mailOptions);
+    } catch (err) {
+      throw new BadRequestException(err.message)
+    }
   }
 }

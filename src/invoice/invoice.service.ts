@@ -56,8 +56,6 @@ export class InvoiceService {
         relations: ['user'],
       });
 
-      console.log(overdueInvoices)
-
       const ids = [];
 
       if (overdueInvoices.length > 0) {
@@ -70,21 +68,30 @@ export class InvoiceService {
           { status: StatusInvoice.OVERDUE },
         );
 
+        
+        const userEmails: { [key: string]: Invoice[] } = {}; 
         for (const invoice of overdueInvoices) {
           const user = invoice.user;
-          console.log(user)
-          if (user && user.email) {
-            await this.emailQueue.add({
-              to: user.email,
+          if (user) {
+            if (!userEmails[user.email]) {
+              userEmails[user.email] = []; 
+            }
+            userEmails[user.email].push(invoice); 
+          }
+          console.log(userEmails)
+        }
+
+        for (const email in userEmails) {
+          const invoices = userEmails[email]
+          const invoiceIds = invoices.map((invoice) => invoice.id).join(', ')
+          const emailBody = `Your invoices of ${email} with IDs: ${invoiceIds} are overdue.`;
+          await this.emailQueue.add({
+              to: email,
               subject: 'Invoice Overdue Notification',
-              text: `Your invoice with ID ${invoice.id} is overdue.`,
+              text: emailBody
             });
-            console.log(
-              `Email task added to queue for ${user.email} for overdue invoice ID ${invoice.id}`,
-            );
           }
         }
-      }
     } catch (error) {
       throw new BadRequestException(
         'Error updating invoice statuses',

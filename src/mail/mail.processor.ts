@@ -10,5 +10,6 @@ export class MailProcessor {
   async handleEmail(job: Job) {
     const { to, subject, text } = job.data;
     await this.emailService.sendEmail(to, subject, text);
+    console.log('Email has been sent')
   }
 }
