@@ -34,3 +34,15 @@ export function transformSort(sort: any): Record<string, 'ASC' | 'DESC'> {
   });
   return sortObj;
 }
+
+export function extractNameFromContent(content: string): string | null {
+  const lines = content.split('\n'); // Tách từng dòng
+  for (const line of lines) {
+    const [key, value] = line.split(':'); // Tách theo dấu :
+    if (key.trim() === 'name') {
+      return value.trim(); // Trả về giá trị name
+    }
+  }
+  return null; // Nếu không tìm thấy name
+}
+
